@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Video Downloader</title>
+    <meta name="description" content="Download videos from YouTube, Facebook, Twitter, Instagram, and more platforms using this free online tool.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="container py-5">
+        <button class="btn btn-sm btn-outline-primary theme-toggle" id="themeToggle">
+            <i class="bi bi-moon-fill"></i> Dark Mode
+        </button>
+        
+        <div class="header">
+            <h1><i class="bi bi-cloud-download"></i> Ultimate Video Downloader</h1>
+            <p class="lead">Download videos from YouTube, Facebook, Twitter, Instagram and more</p>
+            <button class="btn btn-sm btn-outline-info mb-3" id="supportedSitesBtn" data-bs-toggle="modal" data-bs-target="#supportedSitesModal">
+                <i class="bi bi-info-circle"></i> View All Supported Sites
+            </button>
+        </div>
+        
+        <div class="card p-4">
+            <form id="urlForm">
+                <div class="input-group mb-3">
+                    <input type="text" id="videoUrl" class="form-control" placeholder="Enter video URL from any supported site" required>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search"></i> Analyze
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-3 mb-3 example-urls">
+                <p class="small text-muted">Try an example:</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-sm btn-outline-secondary example-url" data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+                        <i class="bi bi-youtube text-danger"></i> YouTube
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary example-url" data-url="https://www.facebook.com/facebook/videos/10153231379946729/">
+                        <i class="bi bi-facebook text-primary"></i> Facebook
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary example-url" data-url="https://twitter.com/NASA/status/1451632329525129217">
+                        <i class="bi bi-twitter text-info"></i> Twitter/X
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary example-url" data-url="https://vimeo.com/148751763">
+                        <i class="bi bi-vimeo text-info"></i> Vimeo
+                    </button>
+                </div>
+            </div>
+            
+            <div id="loader" class="loader"></div>
+            <div id="status"></div>
+            
+            <div id="videoDetails" style="display: none;">
+                <div class="video-container position-relative">
+                    <div class="platform-badge">
+                        <span id="platformBadge" class="badge bg-dark">
+                            <i class="bi bi-youtube platform-icon platform-youtube"></i> YouTube
+                        </span>
+                    </div>
+                    <img id="videoThumbnail" class="thumbnail" src="" alt="Video thumbnail">
+                    <div class="video-info">
+                        <h4 id="videoTitle"></h4>
+                        <p id="videoUploader" class="text-muted"></p>
+                        <p id="videoDuration"></p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button id="watchButton" class="btn btn-outline-primary">
+                                <i class="bi bi-play-fill"></i> Play Video
+                            </button>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="quickPresets" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-lightning-fill"></i> Quick Download
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="quickPresets">
+                                    <li><a class="dropdown-item quick-preset" data-preset="best_video" href="#"><i class="bi bi-badge-hd-fill"></i> Best Quality Video</a></li>
+                                    <li><a class="dropdown-item quick-preset" data-preset="medium_video" href="#"><i class="bi bi-badge-sd-fill"></i> Medium Quality Video</a></li>
+                                    <li><a class="dropdown-item quick-preset" data-preset="low_video" href="#"><i class="bi bi-reception-3"></i> Low Quality Video</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item quick-preset" data-preset="best_audio" href="#"><i class="bi bi-music-note-beamed"></i> Audio Only</a></li>
+                                    <li><a class="dropdown-item quick-preset" data-preset="best_video_only" href="#"><i class="bi bi-film"></i> Video Only (No Audio)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="videoPlayerContainer" class="video-player-container">
+                    <div class="embed-responsive">
+                        <iframe id="videoPlayer" class="video-player" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                </div>
+                
+                <!-- Details & Download Options -->
+                <ul class="nav nav-tabs mt-4" id="downloadOptions" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="video-tab" data-bs-toggle="tab" data-bs-target="#video" type="button" role="tab" aria-controls="video" aria-selected="true">
+                            Video+Audio <span class="badge bg-primary" id="videoFormatsCount">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="video-only-tab" data-bs-toggle="tab" data-bs-target="#video-only" type="button" role="tab" aria-controls="video-only" aria-selected="false">
+                            Video Only <span class="badge bg-purple" id="videoOnlyFormatsCount">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="audio-tab" data-bs-toggle="tab" data-bs-target="#audio" type="button" role="tab" aria-controls="audio" aria-selected="false">
+                            Audio Only <span class="badge bg-info" id="audioFormatsCount">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="subtitles-tab" data-bs-toggle="tab" data-bs-target="#subtitles" type="button" role="tab" aria-controls="subtitles" aria-selected="false">
+                            Subtitles <span class="badge bg-secondary" id="subtitlesCount">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab" aria-controls="details" aria-selected="false">
+                            Video Details
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">
+                            History
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="downloadOptionsContent">
+                    <div class="tab-pane fade show active" id="video" role="tabpanel" aria-labelledby="video-tab">
+                        <h5>Available Video Formats: <small class="text-muted">(includes audio)</small></h5>
+                        <div class="list-group" id="formatsList"></div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="video-only" role="tabpanel" aria-labelledby="video-only-tab">
+                        <h5>Video-Only Formats: <small class="text-muted">(no audio)</small></h5>
+                        <div class="list-group" id="videoOnlyFormatsList"></div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="audio" role="tabpanel" aria-labelledby="audio-tab">
+                        <h5>Audio-Only Formats:</h5>
+                        <div class="list-group" id="audioFormatsList"></div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="subtitles" role="tabpanel" aria-labelledby="subtitles-tab">
+                        <h5>Available Subtitles:</h5>
+                        <div class="list-group" id="subtitlesList"></div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="details" role="tabpanel" aria-labelledby="details-tab">
+                        <div id="videoDetailsInfo">
+                            <div class="video-details-header mb-3">
+                                <h5 id="detailsTitle"></h5>
+                                <p class="text-muted">Uploaded by <span id="detailsUploader"></span> on <span id="detailsDate"></span></p>
+                                <p><span id="detailsViews"></span> views • <span id="detailsLikes"></span> likes</p>
+                            </div>
+                            
+                            <div class="badge-section">
+                                <h6>Categories:</h6>
+                                <div id="detailsCategories"></div>
+                            </div>
+                            
+                            <div class="badge-section">
+                                <h6>Tags:</h6>
+                                <div id="detailsTags"></div>
+                            </div>
+                            
+                            <h6>Description:</h6>
+                            <div class="mt-2 mb-3">
+                                <pre id="detailsDescription" class="text-wrap" style="white-space: pre-wrap;"></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Download History</h5>
+                            <button class="btn btn-sm btn-outline-danger" id="clearHistory">
+                                <i class="bi bi-trash"></i> Clear History
+                            </button>
+                        </div>
+                        <div id="historyList">
+                            <p class="text-center text-muted">No download history yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="downloadStatus" class="mt-3" style="display: none;">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    <span id="downloadMessage"></span>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-4 text-center text-muted">
+            <small>&copy; 2023 Ultimate Video Downloader | Powered by yt-dlp</small>
+        </footer>
+    </div>
+    
+    <!-- Supported Sites Modal -->
+    <div class="modal fade" id="supportedSitesModal" tabindex="-1" aria-labelledby="supportedSitesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="supportedSitesModalLabel">Supported Sites</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="supportedSitesLoader" class="text-center mb-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading supported sites...</p>
+                    </div>
+                    <div id="supportedSitesList" style="display: none;">
+                        <p>This downloader supports <span id="totalSitesCount" class="fw-bold"></span> websites and platforms.</p>
+                        
+                        <h6 class="mt-3">Major Platforms</h6>
+                        <div class="supported-sites mb-3" id="majorSites"></div>
+                        
+                        <h6>Social Media</h6>
+                        <div class="supported-sites mb-3" id="socialSites"></div>
+                        
+                        <h6>Video Platforms</h6>
+                        <div class="supported-sites mb-3" id="videoSites"></div>
+                        
+                        <h6>Audio & Music</h6>
+                        <div class="supported-sites mb-3" id="audioSites"></div>
+                        
+                        <h6>News & Media</h6>
+                        <div class="supported-sites mb-3" id="newsSites"></div>
+                        
+                        <h6>Other Sites</h6>
+                        <div class="supported-sites" id="otherSites"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="api.js"></script>
+    <script src="keyboard_shortcuts.js"></script>
+</body>
+</html>
